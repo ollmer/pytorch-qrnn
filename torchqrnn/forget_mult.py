@@ -1,8 +1,6 @@
 import math
 import torch
 from torch.autograd import Variable
-from cupy.cuda import function
-from pynvrtc.compiler import Program
 from collections import namedtuple
 
 ###
@@ -99,10 +97,12 @@ class GPUForgetMult(torch.autograd.Function):
 
     def compile(self):
         if self.ptx is None:
+            from pynvrtc.compiler import Program
             program = Program(kernel.encode(), 'recurrent_forget_mult.cu'.encode())
             GPUForgetMult.ptx = program.compile()
 
         if torch.cuda.current_device() not in GPUForgetMult.configured_gpus:
+            from cupy.cuda import function
             m = function.Module()
             m.load(bytes(self.ptx.encode()))
 
